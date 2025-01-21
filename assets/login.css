@@ -1,0 +1,70 @@
+/* Stylesheet for login and sign up page */
+:root {
+    --bg-color: white;
+    --text-color: #36454F;
+    --accent-one: #568203;
+    --accent-two: #7B3F00;
+}
+
+#form-div {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.required:after {
+    content: " *";
+    color: var(--accent-two);
+}
+
+.question {
+    text-align: center;
+}
+
+.question a {
+    color: var(--bg-color);
+}
+
+.question a:hover {
+    color: var(--text-color);
+}
+
+.display-4 {
+    font-weight: 600;
+}
+
+html, body {
+    height: 100%;
+}
+
+form, #add {
+    box-shadow: 5px 10px 8px var(--text-color);
+    padding: 10px;
+    min-height: 50%;
+    border-radius: 50px;
+    background-color: var(--accent-one);
+    color: var(--bg-color);
+    padding: 2rem;
+}
+
+form > *, #add > * {
+    margin: 2rem;
+}
+
+form div, #add div {
+    text-align: end;
+}
+
+input {
+    margin-left: 20px;
+    border: 2px solid var(--accent-two);
+}
+
+input:hover {
+    border-color: var(--text-color);
+}
+
+input.button-small {
+    border: none;
+}

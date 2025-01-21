@@ -385,6 +385,10 @@ async function getRequests() {
     return requests
 }
 
+function handleRequestChoice(event) {
+    console.log(event.target);
+}
+
 async function displayRequests() {
     mainApplication.innerHTML = "";
 
@@ -456,6 +460,9 @@ async function displayRequests() {
 
     myStatsButton.style.setProperty('--sidebar-text', colorsArray[1]);
     myStatsButton.style.setProperty('--sidebar-bg', colorsArray[0]);
+
+    acceptButton.addEventListener('click', (event) => handleRequestChoice(event));
+    declineButton.addEventListener('click', (event => handleRequestChoice(event)));
 }
 
 /**

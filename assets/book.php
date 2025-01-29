@@ -306,6 +306,7 @@ if($method === "PUT") {
     $data = json_decode($jsonData, true);
     $code = $data['code'];
 
+    //update friend request to reflect that it was accepted
     if($code === "Accept") {
         $username = $data["username"];
 
@@ -329,6 +330,7 @@ if($method === "DELETE") {
     $data = json_decode($jsonData, true);
     $code = $data["code"];
 
+    //delete a friend request if it was declined
     if($code === "Decline") {
         $username = $data["username"];
 

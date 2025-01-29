@@ -385,18 +385,65 @@ async function getRequests() {
     return requests
 }
 
-function handleRequestChoice(event) {
-    console.log(event.target);
+async function handleRequestChoice(event, username) {
+    const code = event.target.textContent;
+    const url = "assets/book.php";
+    let message = "";
+    try {
+        let response = "";
+        if(code === "Decline") {
+            response = await fetch(url, {
+                method: "DELETE", 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code, 
+                    username: username
+                })
+            });
+        }
+        else {
+            response = await fetch(url, {
+                method: "PUT", 
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    code: code, 
+                    username: username
+                })
+            });
+        }
+
+        if(!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        message = await response.json();
+
+    } catch(error) {
+        console.error("Error fetching data: ", error);
+    }
+
+    displayRequests(message);
+
 }
 
-async function displayRequests() {
+async function displayRequests(message) {
     mainApplication.innerHTML = "";
+
+    const headingDiv = document.createElement('div');
+    headingDiv.classList.add('text-center');
+    headingDiv.classList.add('p-5');
+    headingDiv.id = "headingDiv";
 
     const heading = document.createElement('h5');
     heading.classList.add('display-4');
-    heading.classList.add('text-center');
-    heading.classList.add('p-5');
     heading.textContent = "Friend Requests";
+
+    const messagePara = document.createElement('p');
+    messagePara.textContent = message;
 
     const requestsDiv = document.createElement('div');
     requestsDiv.classList.add('p-5');
@@ -437,6 +484,9 @@ async function displayRequests() {
         declineButton.classList.add('m-2');
         declineButton.textContent = "Decline";
 
+        acceptButton.addEventListener('click', (event) => handleRequestChoice(event, friendRequestUser.textContent));
+        declineButton.addEventListener('click', (event => handleRequestChoice(event, friendRequestUser.textContent)));
+
         buttonDiv.appendChild(acceptButton);
         buttonDiv.appendChild(declineButton);
         friendRequestBody.appendChild(friendRequestUser);
@@ -446,8 +496,12 @@ async function displayRequests() {
         requestsDiv.appendChild(friendRequestDiv);
     }
 
-    mainApplication.appendChild(heading);
+    mainApplication.appendChild(headingDiv);
+    headingDiv.appendChild(heading);
+    headingDiv.appendChild(messagePara);
     mainApplication.appendChild(requestsDiv);
+
+    
 
     myBooksButton.style.setProperty('--sidebar-text', colorsArray[1]);
     myBooksButton.style.setProperty('--sidebar-bg', colorsArray[0]);
@@ -461,8 +515,6 @@ async function displayRequests() {
     myStatsButton.style.setProperty('--sidebar-text', colorsArray[1]);
     myStatsButton.style.setProperty('--sidebar-bg', colorsArray[0]);
 
-    acceptButton.addEventListener('click', (event) => handleRequestChoice(event));
-    declineButton.addEventListener('click', (event => handleRequestChoice(event)));
 }
 
 /**
@@ -626,7 +678,7 @@ myGroupsButton.addEventListener('click', function() {
     myStatsButton.style.setProperty('--sidebar-bg', colorsArray[0]);
 });
 
-requestButton.addEventListener('click', displayRequests);
+requestButton.addEventListener('click', (event) => displayRequests(""));
 myFriendsButton.addEventListener('click', friendHandler);
 myStatsButton.addEventListener('click', (event) => myStatsHandler(event));
 myBooksButton.addEventListener('click', (event) => myBooksHandler(event, 0));

@@ -175,9 +175,9 @@ if($method === 'GET') {
     if(isset($_GET['requests'])) {
         require 'connect_assoc.php';
 
-        $sql = "SELECT username, date_sent FROM friendships JOIN users ON sending_user_id = user_id WHERE receiving_user_id = ?";
+        $sql = "SELECT username, date_sent FROM friendships JOIN users ON sending_user_id = user_id WHERE receiving_user_id = ? AND request_status = ?";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$user_id]);
+        $stmt->execute([$user_id, 'PENDING']);
         $data = $stmt->fetchAll();
 
         echo json_encode($data);
@@ -298,6 +298,54 @@ if($method === 'POST') {
 
         echo json_encode("Request sent to " . htmlspecialchars($username));
         exit();
+    }
+}
+
+if($method === "PUT") {
+    $jsonData = file_get_contents("php://input");
+    $data = json_decode($jsonData, true);
+    $code = $data['code'];
+
+    if($code === "Accept") {
+        $username = $data["username"];
+
+        require 'connect_assoc.php';
+        $sql = "UPDATE friendships SET date_accepted = CURDATE(), request_status = ? WHERE sending_user_id = (SELECT user_id from users WHERE username = ?) AND receiving_user_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['ACCEPTED', $username, $user_id]);
+        $affected = $stmt->rowCount();
+
+        if($affected > 0 && $affected < 2) {
+            echo json_encode("Accepted friend request from $username");
+            exit();
+        }
+
+        echo json_encode("Unable to accept request");
+    }
+}
+
+if($method === "DELETE") {
+    $jsonData = file_get_contents("php://input");
+    $data = json_decode($jsonData, true);
+    $code = $data["code"];
+
+    if($code === "Decline") {
+        $username = $data["username"];
+
+        require 'connect_assoc.php';
+        $sql = "DELETE from friendships WHERE sending_user_id = (SELECT user_id from users WHERE username = ?) AND receiving_user_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$username, $user_id]);
+        $affected = $stmt->rowCount();
+
+        if($affected > 0 && $affected < 2) {
+            echo json_encode("Friend request from $username declined");
+            exit();
+        }
+
+        echo json_encode("Unable to decline request");
+        exit();
+
     }
 }
 

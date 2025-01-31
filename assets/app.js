@@ -285,10 +285,29 @@ async function sendFriendRequest(event, messagePara) {
     messagePara.textContent = message;
 }
 
+async function getFriendsList() {
+    wait = 1;
+    let friendsList = [];
+    try {
+        const response = await fetch(`assets/book.php?friends=friends`);
+
+        if(!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        friendsList = await response.json();
+    }
+    catch (error) {
+        console.error("Error fetching data: ", error);
+    }
+    wait = 0;
+    return friendsList;
+}
+
 /**
  * This function handles the DOM manipulation to dynamically render the friends tab of the app.
  */
-function friendHandler() {
+async function friendHandler() {
     mainApplication.innerHTML = "";
 
     //Create add friend content
@@ -314,36 +333,49 @@ function friendHandler() {
     sendFriendRequestButtonDiv.appendChild(messageParagraph);
     mainApplication.appendChild(sendFriendRequestButtonDiv);
 
-    //Create friend list cards
     const friendCardDiv = document.createElement('div');
     friendCardDiv.classList.add('p-5');
     friendCardDiv.style.setProperty('display', 'flex');
     friendCardDiv.style.setProperty('justify-content', 'center');
 
-    const friendCard = document.createElement('div');
-    friendCard.classList.add('card');
-    friendCard.style.setProperty('width', '18rem');
+    const friends = await getFriendsList();
 
-    const friendCardBody = document.createElement('div');
-    friendCardBody.classList.add('card-body');
+    //Create friend list cards
+    for(let i = 0; i < friends.length; i++) {
     
-    const cardHeading = document.createElement('h5');
-    cardHeading.textContent = "Friend Name";
-
-    const cardTextDiv = document.createElement('div');
-    cardTextDiv.classList.add('card-text');
-    cardTextDiv.classList.add('text-center');
-
-    const sharedReadingButton = document.createElement('p');
-    sharedReadingButton.classList.add('button-small');
-    sharedReadingButton.classList.add('accent-two-button');
-    sharedReadingButton.textContent = "Shared Readings";
+        const friendCard = document.createElement('div');
+        friendCard.classList.add('card');
+        friendCard.style.setProperty('width', '18rem');
     
-    cardTextDiv.appendChild(sharedReadingButton);
-    friendCardBody.appendChild(cardHeading);
-    friendCardBody.appendChild(cardTextDiv);
-    friendCard.appendChild(friendCardBody);
-    friendCardDiv.appendChild(friendCard);
+        const friendCardBody = document.createElement('div');
+        friendCardBody.classList.add('card-body');
+        
+        const cardHeading = document.createElement('h5');
+        cardHeading.textContent = `${friends[i]['username']}`;
+    
+        const cardTextDiv = document.createElement('div');
+        cardTextDiv.classList.add('card-text');
+        cardTextDiv.classList.add('text-center');
+
+        const dateAcceptedPara = document.createElement('p');
+        dateAcceptedPara.classList.add('text-center');
+        dateAcceptedPara.textContent = `Since: ${friends[i]['date_accepted']}`;
+    
+        const sharedReadingButton = document.createElement('p');
+        sharedReadingButton.classList.add('button-small');
+        sharedReadingButton.classList.add('accent-two-button');
+        sharedReadingButton.textContent = "Shared Readings";
+
+        cardTextDiv.appendChild(sharedReadingButton);
+        friendCardBody.appendChild(cardHeading);
+        friendCardBody.appendChild(dateAcceptedPara);
+        friendCardBody.appendChild(cardTextDiv);
+        friendCard.appendChild(friendCardBody);
+        friendCardDiv.appendChild(friendCard);
+
+        sharedReadingButton.addEventListener('click', (event) => myBooksHandler(event, friends[i]['user_id']));
+    }
+    
     mainApplication.appendChild(friendCardDiv);
 
     myBooksButton.style.setProperty('--sidebar-text', colorsArray[1]);
@@ -358,7 +390,6 @@ function friendHandler() {
     myStatsButton.style.setProperty('--sidebar-text', colorsArray[1]);
     myStatsButton.style.setProperty('--sidebar-bg', colorsArray[0]);
 
-    sharedReadingButton.addEventListener('click', (event) => myBooksHandler(event, 2));
     sendFriendRequestButton.addEventListener('click', (event)  => sendFriendRequest(event, messageParagraph));
 }
 

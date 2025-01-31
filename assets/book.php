@@ -183,6 +183,18 @@ if($method === 'GET') {
         echo json_encode($data);
         exit();
     }
+
+    if(isset($_GET['friends'])) {
+        require 'connect_assoc.php';
+
+        $sql = "SELECT username, date_accepted, user_id FROM users JOIN friendships ON user_id = sending_user_id OR user_id = receiving_user_id WHERE (sending_user_id = ? OR receiving_user_id = ?) AND user_id != ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$user_id, $user_id, $user_id]);
+        $data = $stmt->fetchAll();
+
+        echo json_encode($data);
+        exit();
+    }
 }
 
 if($method === 'POST') {
@@ -288,6 +300,28 @@ if($method === 'POST') {
 
         if($receivingUserId === $user_id) {
             echo json_encode("Cannot send friend request to yourself");
+            exit();
+        }
+
+        //verify that the user has not already been sent a friend request by this user
+        $sql = "SELECT * FROM friendships WHERE sending_user_id = ? AND receiving_user_id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$receivingUserId, $user_id]);
+        $rowCount = $stmt->fetch();
+
+        if($rowCount > 0) {
+            echo json_encode("User has already sent you a friend request");
+            exit();
+        }
+
+        //check that user is not already your friend
+        $sql = "SELECT * FROM friendships WHERE (sending_user_id = ? AND receiving_user_id = ? OR sending_user_id = ? AND receiving_user_id = ?) AND request_status = 'ACCEPTED'";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$receivingUserId, $user_id, $user_id, $receivingUserId]);
+        $rowCount = $stmt->fetch();
+
+        if($rowCount > 0) {
+            echo json_encode("You are already friends with $username");
             exit();
         }
 

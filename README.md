@@ -3,6 +3,6 @@ User authentication is fully implemented. More features are on the way, includin
 - User Authentication using PHP sessions
 - Dynamic one page application once signed in via JavaScript DOM manipulation
 - Database designed and properly normalized to avoid data anomalies.
-- Will include friends, with the ability to view the common readings between friends.
+- Includes friends list with the ability to view the common readings between friends.
 - Will include groups, where everyone reads the same book and discusses their thoughts.
 - Will include a chat feature between friends and groups
